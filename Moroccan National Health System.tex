@@ -1,0 +1,146 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{xcolor}
+\geometry{margin=1in}
+
+% ---------- Header ----------
+\setlength{\headheight}{36pt}
+\setlength{\headsep}{18pt}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhf{}
+\fancyhead[L]{\includegraphics[width=0.13\textwidth, keepaspectratio]{Figures/UM6Plogo.png}}
+\fancyhead[R]{\includegraphics[width=0.13\textwidth, keepaspectratio]{Figures/CC.jpg}}
+\fancyfoot[L]{Data Management Lab}
+\fancyfoot[R]{Prof. Karima Echihabi}
+\fancyfoot[C]{Page \thepage}
+
+% ---------- Deliverable Template ----------
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+    \includegraphics[width=0.25\textwidth]{Figures/UM6Plogo.png}\hfill
+    \includegraphics[width=0.25\textwidth]{Figures/CC.jpg}
+    \vspace{1.2cm}
+
+    {\LARGE \textbf{Moroccan National Health Sysytem (LAB 2)}}\\[0.6cm]
+    {\large \textbf{Data Management Course}}\\[0.2cm]
+    {\large UM6P College of Computing}\\[0.8cm]
+
+    {\normalsize \textbf{Professor:} Karima Echihabi \quad 
+    \textbf{Program:} Computer Engineering}\\[0.1cm]
+    {\normalsize \textbf{Session:} Fall 2025}\\[1cm]
+
+    \rule{0.9\textwidth}{0.5pt}\\[0.5cm]
+    {\large \textbf{Team Information}} \\[0.3cm]
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Team Name} & The Avengers \\ \hline
+        \textbf{Member 1}  & Taha Tahiri  \\ \hline
+        \textbf{Member 2}  & Achraf Tata  \\ \hline
+        \textbf{Member 3}  & Mouhamadou Taha Thiam \\ \hline
+        \textbf{Member 4}  & Noura Riahi El Idrissi  \\ \hline
+        \textbf{Member 5}  & Adam Yassin  \\ \hline
+        \textbf{Repository Link} & \texttt{https://github.com/...} \\ \hline
+    \end{tabular}
+    \rule{0.9\textwidth}{0.5pt}\\
+\end{center}
+\clearpage
+\pagestyle{fancy}
+
+% ---------- Sections ----------
+\section{Introduction}
+This problem aims to describe the relationship between different entities (e.g., patients, staff, billing) within the Moroccan National Health Services.  
+Our solution covers how different organs of the MNHS interact with each other.
+
+The problem we aim to solve is how to represent and conceive a database that encompasses the different components of a functioning hospital structure with its departments, staff members, and interactions with patients.
+
+\section{Requirements}
+\textbf{Entities and Attributes:}
+\begin{itemize}
+    \item \textbf{Staff:} 
+    \begin{itemize}
+        \item Technical staff (Certification, record, modality, id)
+        \item Caregiving staff (ward, record grade, id)
+        \item Practitioners (specialty, license number, id)
+    \end{itemize}
+    \item \textbf{Patient:} Full name, id, CIN, phone, date of birth, sex, blood group
+    \item \textbf{Department:} did
+    \item \textbf{Bills:} bill id
+    \item \textbf{Medical Activity:} 
+    \begin{itemize}
+        \item Appointments (status, date, reason, time)
+        \item Emergency (triage level, admission timestamp, outcome, handler, record patient)
+        \item Prescription (date)
+    \end{itemize}
+    \item \textbf{Insurance:} CNOPS, CNSS, RAMED, Private, None
+    \item \textbf{Hospital:} Name, city, region
+    \item \textbf{Pharmacy Inventory:} None
+    \item \textbf{Address:} city, street, postal code, province, optional phone
+    \item \textbf{Medication:} drug id, name, form, strength, manufacturer, therapeutic class, active ingredients
+\end{itemize}
+
+\textbf{Relationships:}
+\begin{itemize}
+    \item Staff $\leftrightarrow$ Patient: many-to-many (relationship: interact)
+    \item Staff $\leftrightarrow$ Department: many-to-many (relationship: works in)
+    \item Staff + Patient (aggregation) $\leftrightarrow$ Medical Activity: many-to-many (relationship: intervene)
+    \item Bills $\leftrightarrow$ Medical Activity: many-to-many (relationship: produce)
+    \item Bills $\rightarrow$ Insurance: one-to-many (relationship: covers)
+    \item Patient $\leftrightarrow$ Insurance: many-to-many (relationship: insured by)
+    \item Patient $\leftrightarrow$ Address: many-to-many (relationship: located in)
+    \item Hospital $\leftrightarrow$ Pharmacy Inventory: many-to-many (relationship: track)
+    \item Hospital $\rightarrow$ Department: one-to-many (relationship: belongs)
+    \item Medical Activity $\rightarrow$ Department: one-to-many (relationship: all in)
+\end{itemize}
+
+\section{Methodology}
+In this part, we explain our methodology for designing the ER diagram.
+
+First of all, \textbf{Patient} is an entity with national identity as its primary key alongside the rest of its attributes. We chose to associate it with the \textbf{Address} entity using a relationship of type zero-to-many called \textit{“located in”}, because each patient can have several addresses, and different patients can live at the same address.
+
+The patients interact with the \textbf{Staff} entity via a relationship called \textit{“interact”} of type zero-to-many in both directions. Since \textbf{Staff} has three subtypes (Caregiver, Technical, Practitioner), we represented this with an ISA relationship, each subtype having its own attributes.
+
+In our ER diagram, we aggregated the \textbf{Patient} and \textbf{Staff} entities and linked this aggregation with another entity, \textbf{Clinical Activities}, through a relationship called \textit{“intervene”}. This is of type zero-to-many and one-to-one: a couple (patient, staff) can participate in multiple clinical activities, while a clinical activity is tied to a single (patient, staff) pair.
+
+The \textbf{Clinical Activity} entity has an ISA component, since it can be either an \textbf{Emergency}, an \textbf{Appointment}, or a \textbf{Prescription}. Each of these carries specific attributes, such as the date of the prescription. Because a clinical activity occurs in exactly one department, we linked it to the \textbf{Department} entity through a relationship \textit{“all in”} of type one-to-one and zero-to-many: a department can have zero or many clinical activities.
+
+A \textbf{Prescription} is a special subtype, since it includes medications with dosage and duration. We therefore linked it to the \textbf{Medication} entity via an \textit{“includes”} relationship of type zero-to-many in both directions: a prescription can contain many medications, and a medication can appear in many prescriptions. The dosage and duration are attributes of this relationship.
+
+We implemented an aggregation because a clinical activity cannot be linked solely to a patient or solely to a staff member.
+
+The requirements specify that bills are generated after a consultation or prescription. We therefore designed \textbf{Bills} as a weak entity dependent on \textbf{Clinical Activity}, linked by a \textit{“produce”} relationship of type one-to-one and zero-to-one: a clinical activity may or may not generate a bill, but a bill is generated by exactly one clinical activity.
+
+Since each bill is covered by a single insurance, but patients can have multiple insurances, we represented \textbf{Insurance} as an entity. Bills are linked to insurance through a \textit{“covers”} relationship of type zero-to-many and one-to-one: one insurance can cover multiple bills, but a bill can only be covered by one insurance. Meanwhile, \textbf{Patient} and \textbf{Insurance} are linked by a \textit{“has”} relationship of type zero-to-many in both directions: an insurance can be assigned to multiple patients, and a patient can have multiple insurances. Types of insurance (RAMED, CNSS, etc.) are modeled with an ISA relationship.
+
+Moving back to staff, since members can be assigned to more than one department, we linked \textbf{Staff} to \textbf{Department} with a \textit{“work in”} relationship of type zero-to-many in both directions.
+
+\textbf{Department} is represented as a weak entity dependent on \textbf{Hospital}, linked by an \textit{“in”} relationship of type one-to-one and zero-to-many: a department must belong to a hospital, but a hospital can have zero or many departments.
+
+Because hospitals need to track their medication supplies, we represented \textbf{Pharmacy Inventory} as a weak entity dependent on the hospital, linked by a \textit{“tracks for”} relationship of type one-to-one and zero-to-many: a hospital keeps track of multiple inventories, but an inventory belongs to only one hospital.
+
+Finally, \textbf{Medication} is linked to \textbf{Pharmacy Inventory} via a \textit{“tracked by”} relationship of type zero-to-many in both directions: the same medication can appear in multiple inventories, and an inventory keeps track of multiple medications.
+
+
+\section{Implementation \& Results}
+\begin{center}
+    \includegraphics[width=1\textwidth, keepaspectratio]{Figures/lab2.jpg}
+\end{center}
+
+\section{Discussion}
+The work in our group was very enriching. We interacted with each other very well, but faced challenges when convincing one another of different points of view. For example, when discussing the type of relationship between staff, patients, and departments, one member suggested a ternary relationship, another proposed an aggregation, and others argued for multiple binary relationships. In the end, the most logical argument prevailed.
+
+We observed that different perspectives could arise, but uniting our ideas allows us to solve complex problems effectively. Teamwork encourages critical thinking, alternative consideration, and objective evaluation.
+
+We also learned the importance of fully understanding requirements and paying attention to details. A single word can change the meaning of a diagram.
+
+Clear communication prevents misunderstandings, ensures everyone is on the same page, and fosters an atmosphere of trust. Good communication strengthens cooperation.
+
+\section{Conclusion}
+Our group worked together several times to fully understand the requirements and discuss perspectives. We tested several ER diagrams before agreeing on the final version, which reflects the complexity of hospital databases in Morocco and shows the organization needed for them to function effectively. The lab highlighted the value of collaboration, discussion, and attention to detail in reaching a solid outcome.
+
+\end{document}
